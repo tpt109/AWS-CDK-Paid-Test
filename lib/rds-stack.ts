@@ -1,7 +1,9 @@
 import {App, Duration, Stack, StackProps} from "@aws-cdk/core";
-import {DatabaseCluster,DatabaseClusterEngine,DatabaseInstance, DatabaseInstanceEngine, StorageType, ParameterGroup} from '@aws-cdk/aws-rds';
+import {DatabaseCluster,DatabaseClusterEngine,DatabaseInstance, DatabaseInstanceEngine, StorageType, ParameterGroup,} from '@aws-cdk/aws-rds';
 import {ISecret, Secret} from '@aws-cdk/aws-secretsmanager';
+import * as secretsmanager from '@aws-cdk/aws-secretsmanager';
 import {InstanceClass, InstanceSize, InstanceType, Peer, SubnetType, Vpc} from "@aws-cdk/aws-ec2";
+import ec2 = require('@aws-cdk/aws-ec2');
 
 export interface RDSStackProps extends StackProps {
     vpc: Vpc;
@@ -9,43 +11,45 @@ export interface RDSStackProps extends StackProps {
 
 export class RDSStack extends Stack {
 
-    readonly secret: ISecret;
+    //secret1:secretsmanager.ISecret;
     readonly auroraPostgresRDSCluster: DatabaseCluster;
-    readonly dbUser = 'admin';
+    readonly dbUser = 'admincluster';
     readonly dbSchema = 'paidtest';
     readonly dbPort = 5432;
 
     constructor(scope: App, id: string, props: RDSStackProps) {
         super(scope, id, props);
 
+        // Place your resource definitions here
+        //this.secret = Secret.fromSecretAttributes(this, '12345678', {
+        //    secretArn: 'arn:aws:secretsmanager:ap-southeast-1:paidtest:secret:ImportedSecret-paidtest',
+        //});
+
+        //this.secret = new Secret(this, 'Secret');
+      
+
     // Place your resource definitions here
-    this.secret = Secret.fromSecretAttributes(this, '12345678', {
-        secretArn: 'arn:aws:secretsmanager:{region}:{organisation-id}:secret:ImportedSecret-paidtest',
-    });
-    
-    this.auroraPostgresRDSCluster = new DatabaseCluster(this, 'aurora-postgres-cluster', {
-        engine: DatabaseInstanceEngine.AURORA_POSTGRESQL,
-        engineVersion: '11.4',
+    this.auroraPostgresRDSCluster = new DatabaseCluster(this, 'paidtestdb', {
+        engine: DatabaseClusterEngine.AURORA_POSTGRESQL,
+        //engineVersion: '11.4',
+        engineVersion: "11.6",
         clusterIdentifier: `auroraPostgresRdsDatabaseCluster`,
-        defaultDatabaseName: this.dbSchema,
         masterUser: {
             username: this.dbUser,
-            password: this.secret.secretValue
+            //password: new Secret.SecretValue("Admin12345?")
         },
         instanceProps: {
-            vpc: props.vpc,
+            instanceType: ec2.InstanceType.of(ec2.InstanceClass.BURSTABLE3, ec2.InstanceSize.SMALL),
             vpcSubnets: {
-                subnetName: "rds",
+                subnetName:'rds'
             },
-            instanceType: InstanceType.of(InstanceClass.T2, InstanceSize.MICRO)
-        },
-        parameterGroup: ParameterGroup.fromParameterGroupName(this, 'auroraPostgresRdsDatabaseParameterGroup', 'default.aurora-postgresql11.4'),
-        storageEncrypted: false,
-        port: this.dbPort
+            parameterGroup: ParameterGroup.fromParameterGroupName(this, 'DBClusterParameterGroup', 'default.aurora-postgresql11'),
+            vpc:props.vpc
+        }
     });
 
-
-
+   
+    //this.secret1 = cluster.secret;
 
     }
 }
