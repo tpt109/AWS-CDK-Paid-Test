@@ -26,7 +26,12 @@ export class RDSStack extends Stack {
         //});
 
         //this.secret = new Secret(this, 'Secret');
-      
+
+        // const rdsClusterPrameterGroup = ParameterGroup.fromParameterGroupName(
+        //     this,
+        //     'rdsClusterPrameterGroup',
+        //     'default.aurora-postgresql11',
+        // )
 
     // Place your resource definitions here
     this.auroraPostgresRDSCluster = new DatabaseCluster(this, 'paidtestdb', {
@@ -39,7 +44,7 @@ export class RDSStack extends Stack {
             //password: new Secret.SecretValue("Admin12345?")
         },
         instanceProps: {
-            instanceType: ec2.InstanceType.of(ec2.InstanceClass.BURSTABLE3, ec2.InstanceSize.SMALL),
+            instanceType: ec2.InstanceType.of(ec2.InstanceClass.BURSTABLE3, ec2.InstanceSize.MEDIUM),
             vpcSubnets: {
                 subnetName:'rds'
             },
@@ -48,7 +53,7 @@ export class RDSStack extends Stack {
         }
     });
 
-   
+
     //this.secret1 = cluster.secret;
 
     }
